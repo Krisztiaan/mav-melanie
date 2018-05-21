@@ -1,0 +1,35 @@
+{
+	"compilerOptions": {
+		"allowSyntheticDefaultImports": true,
+		"experimentalDecorators": true,
+		"forceConsistentCasingInFileNames": true,
+		"importHelpers": true,
+		"jsx": "react-native",
+		"lib": ["dom", "es2015", "es2016", "es2017"],
+		"module": "es2015",
+		"moduleResolution": "node",
+		"noEmitHelpers": true,
+		"noImplicitReturns": true,
+		"noUnusedLocals": true,
+    "removeComments": true,
+		"strict": true,
+		"target": "es2017",
+		"baseUrl": ".",
+		"paths": {
+			"@stores/*": ["src/stores/*"],
+			"@services/*": ["src/services/*"],
+			"@assets/*": ["assets/*"],
+			"@common/*": ["src/common/*"],
+			"@components/*": ["src/components/*"],
+			"@screens/*": ["src/screens/*"],
+			"@constants/*": ["src/constants/*"],
+			"@navigation/*": ["src/navigation/*"],
+			"@node_modules/*": ["node_modules/*"]
+		}
+	},
+  "exclude": [
+    "build",
+    "node_modules"
+  ],
+	"types": ["typePatches"]
+}

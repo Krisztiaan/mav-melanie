@@ -1,0 +1,37 @@
+{
+  "expo": {
+    "name": "Melanie",
+    "description": "This project is really great.",
+    "slug": "mav-melanie",
+    "privacy": "public",
+    "sdkVersion": "27.0.0",
+    "platforms": ["ios", "android"],
+    "version": "1.0.0",
+    "orientation": "default",
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/budapest_map_dark.png",
+      "resizeMode": "cover",
+      "backgroundColor": "#ffffff"
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "bundleIdentifier": "io.krisztiaan.melanie",
+      "supportsTablet": false,
+      "loadJSInBackgroundExperimental": true
+    },
+    "android": {
+      "package": "io.krisztiaan.pentek"
+    },
+		"packagerOpts": {
+			"assetExts": ["ttf", "mp4"],
+			"sourceExts": ["ts", "tsx"],
+			"transformer": "node_modules/react-native-typescript-transformer/index.js"
+		}
+  }
+}
