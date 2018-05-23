@@ -8,7 +8,7 @@
     "platforms": ["ios", "android"],
     "version": "1.0.0",
     "orientation": "default",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/icon_train.png",
     "splash": {
       "image": "./assets/budapest_map_dark.png",
       "resizeMode": "cover",
