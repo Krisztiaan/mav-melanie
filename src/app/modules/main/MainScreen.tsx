@@ -1,40 +1,62 @@
 import React from 'react'
 import { StatusBar, TouchableOpacity } from 'react-native';
-import { Screen, View, Card, Text, Caption } from '@shoutem/ui'
+import { Screen, View, Card, Text, Caption, TextInput } from '@shoutem/ui'
 import { MapView } from 'expo'
-import { Route, Link, RouteComponentProps, match } from 'react-router-native';
+import { Route, Link, RouteComponentProps, match, Redirect } from 'react-router-native'
+import { Location } from 'history'
 import { MaterialCommunityIcons, MaterialCommunityIconsProps } from '@expo/vector-icons'
 
 import generatedMapStyle from './googleMapsConfig.json'
+const hungaryRegion = {
+  longitudeDelta: 7.060023397207258,
+  latitudeDelta: 5.635177680611903,
+  longitude: 19.483756721019745,
+  latitude: 47.890610093493045
+}
 
 export default class MainScreen extends React.Component<RouteComponentProps<{}>> {
+  componentDidMount () {
+    this.props.history.push(`${this.props.match.url}/${defaultFeature}`)
+  }
+
   render() {
     console.log(this.props)
     const { match, location } = this.props
+    const currentFeature = location.pathname.substr(match.path.length + 1).split('/')[0] as keyof MenuFeatures
+    if(!currentFeature) return null
     return (
       <Screen style={{ flex: 1 }}>
         <StatusBar barStyle="light-content" />
         <MapView
-          style = {{ position: 'absolute', left: 0, right: 0, bottom: 0, top: 0 }}
-          provider = { MapView.PROVIDER_GOOGLE }
-          customMapStyle = { generatedMapStyle }
-          initialRegion={{
-            latitude: 45.98323841436206,
-            latitudeDelta: 11.941377300091823,
-            longitude: 19.3582571670413,
-            longitudeDelta: 7.982089743018152,
+          style={{ position: 'absolute', left: 0, right: 0, bottom: 0, top: 0 }}
+          provider={MapView.PROVIDER_GOOGLE}
+          customMapStyle={generatedMapStyle }
+          initialRegion={hungaryRegion}
+          mapPadding={{
+            bottom: 220
           }}
         />
-        <View style={{ flex: 1 }}>
-          <View>
-            <Text>Top bar</Text>
+        <View style={{ flex: 1 }} pointerEvents="box-none">
+          <View style={{
+            paddingTop: 32,
+            paddingHorizontal: 16,
+            flexDirection: 'row',
+            shadowColor: '#777',
+            shadowRadius: 5,
+            shadowOpacity: 0.1,
+            shadowOffset: { width: 2, height: 4 },
+          }}>
+            <Card style={{
+              flex: 1,
+              borderRadius: 8,
+              borderWidth: 1,
+              borderColor: '#fff',
+              overflow: 'hidden',
+              elevation: 1,
+            }}>
+              <TextInput placeholder="Indulo allomas"/>
+            </Card>
           </View>
-          <View>
-            <Text>Bottom bar</Text>
-          </View>
-          <Route exact path={`${match.url}`}>
-            <Text>Simple search, and news</Text>
-          </Route>
           <View style={{
             backgroundColor: '#FFF',
             position: 'absolute',
@@ -48,12 +70,10 @@ export default class MainScreen extends React.Component<RouteComponentProps<{}>>
             shadowOffset: { width: 5, height: 7 }
           }}>
             <View style={{ flex: 1 }}>
-              <Text>
-                PageContent
-              </Text>
+              { MenuFeatures[currentFeature].pageContent }
             </View>
-            <View style={{ height: 100, flexDirection: 'row', paddingBottom: 6 }}>
-              { MENUS.map(menu => <MenuItem key={menu.name} item={menu} match={match}/>)}
+            <View style={{ height: 60, flexDirection: 'row', paddingBottom: 8 }}>
+              { Object.entries(MenuFeatures).map(menu => <MenuButton key={menu[0]} item={menu[1]} match={match} location={location}/>) }
             </View>
           </View>
         </View>
@@ -64,20 +84,29 @@ export default class MainScreen extends React.Component<RouteComponentProps<{}>>
           right: 0,
           bottom: 100,
           height: 120,
-          paddingHorizontal: 32
+          paddingHorizontal: 16
         }}>
-          <Card style={{
+          <View style={{
             flex: 1,
-            backgroundColor: '#FFF',
-            shadowColor: 'black',
+            flexDirection: 'row',
+            shadowColor: '#777',
             shadowRadius: 9,
             shadowOpacity: 0.3,
-            shadowOffset: { width: 5, height: 7 },
+            shadowOffset: { width: 2, height: 7 },
           }}>
-            <View styleName="content">
-              <Text>CardContent</Text>
-            </View>
-          </Card>
+            <Card style={{
+              flex: 1,
+              backgroundColor: '#FFF',
+              borderRadius: 8,
+              borderWidth: 1,
+              borderColor: '#fff',
+              overflow: 'hidden',
+            }}>
+              <View styleName="content">
+                { MenuFeatures[currentFeature].cardContent }
+              </View>
+            </Card>
+          </View>
         </View>
       </Screen>
     )
@@ -86,52 +115,75 @@ export default class MainScreen extends React.Component<RouteComponentProps<{}>>
 
 }
 
-const MenuItem = ({ match, item }: { match: match<{}>, item: Menu}) => {
+const MenuButton = ({ match, item, location }: { match: match<{}>, location: Location, item: MenuFeature}) => {
   return (
-    <View  style={{ flex: 1, alignItems: 'center', justifyContent: 'flex-end' }}>
+    <View  style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
       <Link to={`${match.url}/${item.path}`} component={TouchableOpacity}>
         <View styleName='vertical h-center'>
-          <MaterialCommunityIcons name={item.icon.name} size={32} color={location.pathname === `${match.url}/${item.path}` ? '#2e5ea8' : '#333'} />
-          <Caption>{item.name}</Caption>
+          <MaterialCommunityIcons name={item.icon.name} size={32} color={location.pathname === `${match.url}/${item.path}` ? '#2e5ea8' : '#777'} />
+          { false && <Caption>{item.name}</Caption> }
         </View>
       </Link>
     </View>
   )
 }
 
-interface Menu {
+interface MenuFeature {
   name: string
   icon: MaterialCommunityIconsProps
   path: string
+  isInBottomBar: boolean
+  cardContent: React.ReactChild
+  pageContent: React.ReactChild
+  autoOpenPage?: boolean
 }
 
-const MENUS: Menu[] = [
-  {
-    name: 'HIREK',
+interface MenuFeatures { [key: string]: MenuFeature }
+
+const defaultFeature = 'news'
+const MenuFeatures: MenuFeatures = {
+  news: {
+    name: 'Hírek',
     icon: {
       name: 'newspaper'
     },
     path: 'news',
+    isInBottomBar: true,
+    autoOpenPage: false,
+    cardContent: <Caption>news</Caption>,
+    pageContent: <Caption>news PAGE</Caption>,
   },
-  {
-    name: 'MENET',
+  timetable: {
+    name: 'Menetrend',
     icon: {
       name: 'timetable'
     },
     path: 'timetable',
+    isInBottomBar: true,
+    autoOpenPage: false,
+    cardContent: <Caption>timetable</Caption>,
+    pageContent: <Caption>timetable PAGE</Caption>,
   },
-  {
-    name: 'UTAK',
+  tickets: {
+    name: 'Jegyek',
     icon: {
       name: 'ticket-confirmation'
     },
     path: 'tickets',
+    isInBottomBar: true,
+    autoOpenPage: false,
+    cardContent: <Caption>tickets</Caption>,
+    pageContent: <Caption>tickets PAGE</Caption>,
   },
-  {
-    name: 'BEALLIT',
+  settings: {
+    name: 'Beállítások',
     icon: {
       name: 'settings'
     },
     path: 'settings',
+    isInBottomBar: true,
+    autoOpenPage: false,
+    cardContent: <Caption>settings</Caption>,
+    pageContent: <Caption>settings PAGE</Caption>,
   }
-]
+}
