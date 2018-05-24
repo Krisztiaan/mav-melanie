@@ -72,8 +72,22 @@ export default class MainScreen extends React.Component<RouteComponentProps<{}>>
             <View style={{ flex: 1 }}>
               { MenuFeatures[currentFeature].pageContent }
             </View>
-            <View style={{ height: 60, flexDirection: 'row', paddingBottom: 8 }}>
-              { Object.entries(MenuFeatures).map(menu => <MenuButton key={menu[0]} item={menu[1]} match={match} location={location}/>) }
+            <View style={{
+              justifyContent: 'flex-end',
+              backgroundColor: '#FFF',
+              position: 'absolute',
+              left: 0,
+              right: 0,
+              bottom: 0,
+              height: 120,
+              shadowColor: 'black',
+              shadowRadius: 9,
+              shadowOpacity: 0.3,
+              shadowOffset: { width: 5, height: 7 }
+            }}>
+              <View style={{ height: 60, flexDirection: 'row', paddingBottom: 8 }}>
+                { Object.entries(MenuFeatures).map(menu => <MenuButton key={menu[0]} item={menu[1]} match={match} location={location}/>) }
+              </View>
             </View>
           </View>
         </View>
@@ -118,8 +132,8 @@ export default class MainScreen extends React.Component<RouteComponentProps<{}>>
 const MenuButton = ({ match, item, location }: { match: match<{}>, location: Location, item: MenuFeature}) => {
   return (
     <View  style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-      <Link to={`${match.url}/${item.path}`} component={TouchableOpacity}>
-        <View styleName='vertical h-center'>
+      <Link to={`${match.url}/${item.path}`} component={TouchableOpacity} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+        <View styleName='vertical h-center' style={{ padding: 12 }}>
           <MaterialCommunityIcons name={item.icon.name} size={32} color={location.pathname === `${match.url}/${item.path}` ? '#2e5ea8' : '#777'} />
           { false && <Caption>{item.name}</Caption> }
         </View>
