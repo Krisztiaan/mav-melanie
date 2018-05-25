@@ -1,16 +1,18 @@
 import * as Expo from "expo"
 import * as React from "react"
 import { Provider } from "mobx-react/native"
-
+import { UIManager } from 'react-native'
 import { MavDb } from '@services/database'
 import { MavApi } from '@services/api'
 
-import App from "../RootContainer";
+import App from "../RootContainer"
+
+UIManager.setLayoutAnimationEnabledExperimental && UIManager.setLayoutAnimationEnabledExperimental(true);
 export interface Props {}
 export interface State {
   isReady: boolean,
 }
-export default function(stores: any[]) {
+export default function(stores: any) {
   return class Setup extends React.Component<Props, State> {
     state: {
       isReady: boolean,
@@ -64,6 +66,7 @@ export default function(stores: any[]) {
       if (!this.state.isReady) {
         return <Expo.AppLoading />;
       }
+      console.log(stores)
       return (
         <Provider {...stores}>
           <App />

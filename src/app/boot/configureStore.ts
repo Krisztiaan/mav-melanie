@@ -1,8 +1,8 @@
 import RoutePlanStore from "@stores/RoutePlanStore"
 
 export default function() {
-	const routePlanStore = RoutePlanStore
-
+	const routePlanStore = new RoutePlanStore()
+  console.log(routePlanStore)
 	return {
 		routePlanStore
 	}

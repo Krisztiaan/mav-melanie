@@ -1,12 +1,17 @@
 import React from 'react'
-import { StatusBar, TouchableOpacity, View, StyleSheet } from 'react-native';
+import { StatusBar, TouchableOpacity, View, StyleSheet, Animated, LayoutAnimation } from 'react-native'
+import DateTimePicker from 'react-native-modal-datetime-picker'
 import { Screen, View as ShView, Card, Text, Caption, Title, Subtitle, TextInput, Row, Button } from '@shoutem/ui'
 import { MapView } from 'expo'
 import { Route, Link, RouteComponentProps, match, Redirect } from 'react-router-native'
 import { Location } from 'history'
 import { MaterialCommunityIcons, MaterialCommunityIconsProps, Ionicons } from '@expo/vector-icons'
+import * as Animatable from 'react-native-animatable'
+import { observer, inject } from 'mobx-react/native'
+import moment from 'moment'
 
 import generatedMapStyle from './googleMapsConfig.json'
+import RoutePlanStore from '@stores/RoutePlanStore';
 const hungaryRegion = {
   longitudeDelta: 7.060023397207258,
   latitudeDelta: 5.635177680611903,
@@ -14,14 +19,27 @@ const hungaryRegion = {
   latitude: 47.890610093493045
 }
 
-export default class MainScreen extends React.Component<RouteComponentProps<{}>> {
+@inject("routePlanStore")
+@observer
+export default class MainScreen extends React.Component<RouteComponentProps<{}> & { routePlanStore: RoutePlanStore }> {
 
   state = {
-    isPageOpen: false
+    isPageOpen: false,
+    isSearchOpen: false,
+    isDateTimePickerVisible: false,
+  }
+
+  handleDateTimePicked = (date: Date) => {
+    this.props.routePlanStore.setDate(moment(date), 'departure')
+    this.setState({ isDateTimePickerVisible: false })
   }
 
   componentDidMount () {
     this.navigateToFeature(defaultFeature)
+  }
+
+  componentDidUpdate() {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.spring)
   }
 
   navigateToFeature = (feature: keyof MenuFeatures) => {
@@ -30,8 +48,8 @@ export default class MainScreen extends React.Component<RouteComponentProps<{}>>
 
   render() {
     console.log(this.props)
-    const { match, location } = this.props
-    const { isPageOpen } = this.state
+    const { match, location, routePlanStore } = this.props
+    const { isSearchOpen, isPageOpen } = this.state
     const currentFeatureKey = location.pathname.substr(match.path.length + 1).split('/')[0] as keyof MenuFeatures
     const currentFeature = MenuFeatures[currentFeatureKey]
     if(!currentFeature) return null
@@ -66,48 +84,55 @@ export default class MainScreen extends React.Component<RouteComponentProps<{}>>
               overflow: 'hidden',
               elevation: 1,
             }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <View style={{ flexDirection: 'row' }}>
+                <View style={{ flex: 5 }}>
                   <TextInput
-                  style={{ flex: 5 }}
                     placeholder="Induló állomás"
                     onFocus={currentFeature.path !== 'search' ? (() => this.navigateToFeature('search')) : undefined}
                   />
-                  <View style={{
-                    alignSelf: 'stretch',
-                    borderLeftColor: "#CCC",
-                    borderLeftWidth: StyleSheet.hairlineWidth,
-                  }}/>
-                  <TouchableOpacity style={{ flex: 4 }} onPress={() => undefined}>
+                  { currentFeatureKey === 'search' ? <TextInput
+                    style={{ }}
+                    placeholder="Cél állomás"
+                  /> : null }
+                </View>
+                <View style={{
+                  alignSelf: 'stretch',
+                  borderLeftColor: "#CCC",
+                  borderLeftWidth: StyleSheet.hairlineWidth,
+                }}/>
+                { currentFeatureKey === 'search' ? <View style={{ flex: 4 }}>
+                  <TouchableOpacity style={{ flex: 1 }} onPress={() => this.setState({ isDateTimePickerVisible: true })}>
                     <View style={{ flexDirection: 'column', padding: 12 }}>
                       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                         <Subtitle styleName="bold">Nap</Subtitle>
                         <Ionicons name="ios-arrow-down" size={16} color="#777"/>
                       </View>
-                      <Caption>Ma, Csütörtök</Caption>
+                      <Caption>{
+                        `${routePlanStore.date.calendar().split(" ")[0]}${routePlanStore.date.calendar().split(" ")[0] === routePlanStore.date.format('dddd') ? '' : ', ' + routePlanStore.date.format('dddd')}`}</Caption>
                     </View>
                   </TouchableOpacity>
-                </View>
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <TextInput
-                  style={{ flex: 5 }}
-                    placeholder="Cél állomás"
-                  />
                   <View style={{
                     alignSelf: 'stretch',
-                    borderLeftColor: "#CCC",
-                    borderLeftWidth: StyleSheet.hairlineWidth,
+                    borderBottomColor: "#CCC",
+                    borderBottomWidth: StyleSheet.hairlineWidth,
                   }}/>
-                  <TouchableOpacity style={{ flex: 4 }} onPress={() => undefined}>
+                  <TouchableOpacity style={{ flex: 1 }} onPress={() => this.setState({ isDateTimePickerVisible: true })}>
                     <View style={{ flexDirection: 'column', padding: 12 }}>
                       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                         <Subtitle styleName="bold">Indulás</Subtitle>
                         <Ionicons name="ios-arrow-down" size={16} color="#777"/>
                       </View>
-                      <Caption>08:00 am</Caption>
+                      <Caption>{routePlanStore.date.format('HH:mm')}</Caption>
                     </View>
                   </TouchableOpacity>
-                </View>
+                </View> : null }
+              </View>
             </Card>
+              { isSearchOpen ? <View>
+                <Text>Hello</Text>
+                <Button>Kereses</Button>
+                <Button>Jegyvasarlas</Button>
+              </View> : null }
           </View>
           <View style={{
             backgroundColor: '#FFF',
@@ -156,6 +181,13 @@ export default class MainScreen extends React.Component<RouteComponentProps<{}>>
         }}>
             { currentFeature.cardContent ? <CardContent item={currentFeature}/> : null }
         </View>
+        <DateTimePicker
+          isVisible={this.state.isDateTimePickerVisible}
+          onConfirm={this.handleDateTimePicked}
+          onCancel={() => this.setState({ isDateTimePickerVisible: false })}
+          date={new Date(this.props.routePlanStore.date.valueOf())}
+          mode="datetime"
+        />
       </Screen>
     )
   }

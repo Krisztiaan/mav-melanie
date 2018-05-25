@@ -1,0 +1,28 @@
+image: node:6.11.0
+
+stages:
+  - build
+  - deploy
+
+before_script:
+  - npm i -g exp --silent
+
+cache:
+  key: ${CI_PROJECT_ID}
+  paths:
+  - node_modules/
+
+build:
+  stage: build
+  script:
+    - npm i --silent
+
+deploy:
+  stage: deploy
+  only:
+    - master
+    - /^release\/.*$/
+  script:
+    - exp login -u ${EXPO_USERNAME} -p ${EXPO_PASSWORD}
+    #- exp build:android
+    - exp publish

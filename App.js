@@ -8,6 +8,6 @@
 //
 // It's easier just to leave it here.
 
-import boot from "./src/app/boot/setup"
+import boot from "./src/app/boot"
 
 export default boot()
